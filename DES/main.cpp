@@ -233,14 +233,21 @@ public:
 	{
 		delete roundKeyGenerator;
 	}
-	void encrypt(bitset<64> &plainText) {
+	void encrypt(bitset<64> &plainText_) {
 
-		bitset<64>plainText_ = rearrange<64, 64>(plainText, IP);
+		//bitset<64>plainText_ = rearrange<64, 64>(plainText, IP);
 		for (size_t i = 0; i < 32; i++)
 		{
 			lPart[i] = plainText_[i];
 			rPart[i] = plainText_[i + 32];
 		}
+		cout << "plainText: ";
+		for (size_t i = 0; i < 64; i++)
+		{
+			cout << plainText_[i] << " ";
+		}
+		cout << endl;
+		cout << hex << plainText_.to_ullong() << endl;
 		bitset<32> temp;
 		for (size_t i = 0; i < 16; i++)
 		{
@@ -255,7 +262,20 @@ public:
 			encrypted[i] = rPart[i];
 			encrypted[i+32] = lPart[i];
 		}
-		encrypted = rearrange<64, 64>(encrypted, IP_1);
+		cout << "encrypted: ";
+		for (size_t i = 0; i < 64; i++)
+		{
+			cout << encrypted[i] << " ";
+		}
+		cout << endl;
+		//encrypted = reverse(encrypted);
+		cout << hex << encrypted.to_ullong() << endl;
+		//encrypted = rearrange<64, 64>(encrypted, IP_1);
+		
+		
+	}
+	RoundKeyGenerator* getRoundKeyGenerator() {
+		return roundKeyGenerator;
 	}
 private:
 	bitset<keySize> key_;
@@ -264,27 +284,70 @@ private:
 	bitset<32> rPart;
 
 };
+class DesDecryption {
+public:
+	DesDecryption(unsigned long long key, RoundKeyGenerator* r) : key_(key), roundKeyGenerator(r){
+	}
+	void decrypt(bitset<64> &cipherText_) {
+		//bitset<64>cipherText_ = rearrange<64, 64>(cipherText, IP);
+		cout << "cipherText: ";
+		for (size_t i = 0; i < 64; i++)
+		{
+			cout << cipherText_[i] << " ";
+		}
+		cout << endl;
+		cout << hex << cipherText_.to_ullong() << endl;
+		for (size_t i = 0; i < 32; i++)
+		{
+			rPart[i] = cipherText_[i];
+			lPart[i] = cipherText_[i + 32];
+		}
+		bitset<32> temp;
+		for (int i = 15; i >= 0; i--)
+		{
+			temp = rPart;
+			rPart = lPart;
+			lPart = (temp^function1(rPart, roundKeyGenerator->getRoundKey(i)));//!
+		}
+		
+		bitset<64> decrypted;
+		for (size_t i = 0; i < 32; i++)
+		{
+			decrypted[i] = lPart[i];
+			decrypted[i + 32] = rPart[i];
+		}
+		cout << "decrypted: ";
+		for (size_t i = 0; i < 64; i++)
+		{
+			cout << decrypted[i] << " ";
+		}
+		cout << endl;
+		//encrypted = rearrange<64, 64>(encrypted, IP_1);
+		//encrypted = reverse(encrypted);
+		cout << hex << decrypted.to_ullong() << endl;
+	}
+private:
+	bitset<keySize> key_;
+	RoundKeyGenerator *roundKeyGenerator;
+	bitset<32> lPart;
+	bitset<32> rPart;
+};
 int main() {
 	//setlocale(0, "rus");
 	{
 		Timer timer(__FUNCTION__);
 		try {
 			const unsigned keyLength = 64;
-		
-			
-
-			DesEncryption d(0xAABB09182736CCDD);
+	
+			DesEncryption e(0xAABB09182736CCDD);
 			bitset<64> plain(0x123456ABCD132536);
-			bitset<64> plainReversed = reverse(plain);
-			d.encrypt(plainReversed);
+			//bitset<64> plainReversed = reverse(plain);
+			e.encrypt(plain);
 
-			//RoundKeyGenerator k;
-			//bitset<64> new_key(0xAABB09182736CCDD);
-			//bitset<64> key = reverse(new_key);//!
-			//k.initializeC0D0(key);
-			//k.generateRoundKeys(16);
-			
-			
+			DesDecryption d(0xAABB09182736CCDD,e.getRoundKeyGenerator());
+			bitset<64> cipher(0x41fc5f6944178ea5);
+			//cipher = reverse(cipher);
+			d.decrypt(cipher);
 			
 		}
 		catch (const exception &exc) {

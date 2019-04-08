@@ -82,13 +82,26 @@ bitset<bitsSize> rightCycleShift(bitset<bitsSize> &bits, size_t sbits) {
 
 template<size_t bitsSize>
 void show(bitset<bitsSize> &bits) {
-	
+
 	for (size_t i = 0; i < bitsSize; i++)
 	{
 		cout << bits[i] << " ";
 	}
 	cout << endl;
 }
+
+template<size_t bitsSize>
+bitset<2 * bitsSize> combineBitSets(const bitset<bitsSize> &lowBits, const bitset<bitsSize> &highBits) {
+	bitset<2 * bitsSize> combination;
+	for (size_t i = 0; i < bitsSize; i++)
+	{
+		combination[i] = lowBits[i];
+		combination[i + bitsSize] = highBits[i];
+	}
+	return combination;
+}
+
+
 
 char s1[64] = { 14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7,
 				0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8,
@@ -138,7 +151,7 @@ bitset<32> function1(bitset<32> &rPart, const bitset<48> &roundKey) {
 		afterSBoxes |= (s[i][row * 16 + column]<< offset1);
 		offset1 -= 4;
 	}
-	afterSBoxes = reverse(afterSBoxes);
+	//afterSBoxes = reverse(afterSBoxes);
 	return rearrange<32, 32>(afterSBoxes, function1PBox);
 }
 
@@ -166,8 +179,8 @@ public:
 		for (size_t i = 0; i < rounds; i++)
 		{
 			countCurrentShift(i+1);
-			ci = rightCycleShift(c0, currentShift);//!
-			di = rightCycleShift(d0, currentShift);//!
+			ci = leftCycleShift(c0, currentShift);//!
+			di = leftCycleShift(d0, currentShift);//!
 			cout << "c" << i+1 << ": ";
 			show(ci);
 			cout << "d" << i+1 << ": ";
@@ -225,8 +238,8 @@ class DesEncryption {
 public:
 	DesEncryption(unsigned long long key) : key_(key) {
 		roundKeyGenerator = new RoundKeyGenerator;
-		bitset<64> temp = reverse(key_);
-		roundKeyGenerator->initializeC0D0(temp);
+		//bitset<64> temp = reverse(key_);
+		roundKeyGenerator->initializeC0D0(key_);
 		roundKeyGenerator->generateRoundKeys(16);
 	}
 	~DesEncryption()
@@ -242,10 +255,10 @@ public:
 			rPart[i] = plainText_[i + 32];
 		}
 		cout << "plainText: ";
-		for (size_t i = 0; i < 64; i++)
+		/*for (size_t i = 0; i < 64; i++)
 		{
 			cout << plainText_[i] << " ";
-		}
+		}*/
 		cout << endl;
 		cout << hex << plainText_.to_ullong() << endl;
 		bitset<32> temp;
@@ -263,10 +276,10 @@ public:
 			encrypted[i+32] = lPart[i];
 		}
 		cout << "encrypted: ";
-		for (size_t i = 0; i < 64; i++)
+		/*for (size_t i = 0; i < 64; i++)
 		{
 			cout << encrypted[i] << " ";
-		}
+		}*/
 		cout << endl;
 		//encrypted = reverse(encrypted);
 		encrypted = rearrange<64, 64>(encrypted, IP_1);
@@ -292,10 +305,10 @@ public:
 	void decrypt(bitset<64> &cipherText) {
 		bitset<64>cipherText_ = rearrange<64, 64>(cipherText, IP);
 		cout << "cipherText: ";
-		for (size_t i = 0; i < 64; i++)
+		/*for (size_t i = 0; i < 64; i++)
 		{
 			cout << cipherText_[i] << " ";
-		}
+		}*/
 		cout << endl;
 		cout << hex << cipherText_.to_ullong() << endl;
 		for (size_t i = 0; i < 32; i++)
@@ -318,10 +331,10 @@ public:
 			decrypted[i + 32] = rPart[i];
 		}
 		cout << "decrypted: ";
-		for (size_t i = 0; i < 64; i++)
+		/*for (size_t i = 0; i < 64; i++)
 		{
 			cout << decrypted[i] << " ";
-		}
+		}*/
 		cout << endl;
 		decrypted = rearrange<64, 64>(decrypted, IP_1);
 		//encrypted = reverse(encrypted);
@@ -339,14 +352,16 @@ int main() {
 		Timer timer(__FUNCTION__);
 		try {
 			const unsigned keyLength = 64;
-	
+			bitset<8> a('A');
+			bitset<8> b('B');
+			combineBitSets(a, b);
 			DesEncryption e(0xAABB09182736CCDD);
 			bitset<64> plain(0x123456ABCD132536);
 			//bitset<64> plainReversed = reverse(plain);
 			e.encrypt(plain);
 
 			DesDecryption d(0xAABB09182736CCDD,e.getRoundKeyGenerator());
-			bitset<64> cipher(0xcbff851b3aae1adf);
+			bitset<64> cipher(0x815ecdae889d1add);
 			//cipher = reverse(cipher);
 			d.decrypt(cipher);
 			

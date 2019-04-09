@@ -32,6 +32,7 @@ const size_t keySize = 64;
 							1, 15, 23, 26, 5, 18, 31, 10,
 							2, 8, 24, 14, 32, 27, 3, 9,
 							19, 13, 30, 6, 22, 11, 4, 25 };
+
 template<size_t bitsSize>
 bitset<bitsSize> reverse(bitset<bitsSize> &bits) {
 	bitset<bitsSize> reversed_bits;
@@ -101,6 +102,16 @@ bitset<2 * bitsSize> combineBitSets(const bitset<bitsSize> &lowBits, const bitse
 	return combination;
 }
 
+template<size_t bitsSize>
+void divideBitSets(bitset<bitsSize/2> &lowBits, bitset<bitsSize/2> &highBits, const bitset<bitsSize> &bitsToDivide) {
+	
+	for (size_t i = 0; i < bitsSize / 2; i++)
+	{
+		lowBits[i] = bitsToDivide[i];
+		highBits[i] = bitsToDivide[i + bitsSize / 2];
+	}
+	
+}
 
 
 char s1[64] = { 14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7,
@@ -147,11 +158,10 @@ bitset<32> function1(bitset<32> &rPart, const bitset<48> &roundKey) {
 	{
 		row = expanded[0+offset*i] * 2 + expanded[5+offset*i];
 		column = expanded[1 + offset * i] * 8 + expanded[2 + offset * i] * 4 + expanded[3 + offset * i] * 2 + expanded[4 + offset * i];
-		//cout << int(s[i][row * 16 + column]) << endl;
 		afterSBoxes |= (s[i][row * 16 + column]<< offset1);
 		offset1 -= 4;
 	}
-	//afterSBoxes = reverse(afterSBoxes);
+	
 	return rearrange<32, 32>(afterSBoxes, function1PBox);
 }
 
@@ -160,42 +170,20 @@ public:
 	RoundKeyGenerator():currentShift(0){}
 	template<size_t bitsSize>
 	void initializeC0D0(bitset<bitsSize> &bits) {
-		cout << "c0: ";
-		for (size_t i = 0; i < 28; i++)//!
+		for (size_t i = 0; i < 28; i++)
 		{
 			c0[i] = bits[--roundKeyTable_[i]];
-			cout << c0[i] << " ";
+			d0[i] = bits[--roundKeyTable_[i + 28]];
 		}
-		cout << endl;
-		cout << "d0: ";
-		for (size_t i = 0; i < 28; i++)//!
-		{
-			d0[i] = bits[--roundKeyTable_[i+28]];
-			cout << d0[i] << " ";
-		}
-		cout << endl << endl;
 	}
 	void generateRoundKeys(unsigned rounds) {
 		for (size_t i = 0; i < rounds; i++)
 		{
 			countCurrentShift(i+1);
-			ci = leftCycleShift(c0, currentShift);//!
-			di = leftCycleShift(d0, currentShift);//!
-			cout << "c" << i+1 << ": ";
-			show(ci);
-			cout << "d" << i+1 << ": ";
-			show(di);
-			for (size_t j = 0; j < 28; j++)
-			{
-				temporaryKey[j] = ci[j];
-				temporaryKey[j+28] = di[j];
-			}
-			cout << "temporaryKey: ";
-			show(temporaryKey);
+			ci = leftCycleShift(c0, currentShift);
+			di = leftCycleShift(d0, currentShift);
+			temporaryKey = combineBitSets(ci, di);
 			roundKeys[i] = rearrange<56,48>(temporaryKey, finalTable_);
-			cout << "roundKey: ";
-			show(roundKeys[i]);
-			cout << endl;
 		}
 	}
 	const bitset<48>& getRoundKey(size_t index)const {
@@ -238,7 +226,6 @@ class DesEncryption {
 public:
 	DesEncryption(unsigned long long key) : key_(key) {
 		roundKeyGenerator = new RoundKeyGenerator;
-		//bitset<64> temp = reverse(key_);
 		roundKeyGenerator->initializeC0D0(key_);
 		roundKeyGenerator->generateRoundKeys(16);
 	}
@@ -249,17 +236,13 @@ public:
 	void encrypt(bitset<64> &plainText) {
 
 		bitset<64>plainText_ = rearrange<64, 64>(plainText, IP);
-		for (size_t i = 0; i < 32; i++)
+		divideBitSets(lPart, rPart, plainText_);
+		/*for (size_t i = 0; i < 32; i++)
 		{
 			lPart[i] = plainText_[i];
 			rPart[i] = plainText_[i + 32];
-		}
-		cout << "plainText: ";
-		/*for (size_t i = 0; i < 64; i++)
-		{
-			cout << plainText_[i] << " ";
 		}*/
-		cout << endl;
+		cout << "plainText: " << endl;
 		cout << hex << plainText_.to_ullong() << endl;
 		bitset<32> temp;
 		for (size_t i = 0; i < 16; i++)
@@ -269,24 +252,14 @@ public:
 			rPart = (temp^function1(rPart, roundKeyGenerator->getRoundKey(i)));
 
 		}
-		bitset<64> encrypted;
-		for (size_t i = 0; i < 32; i++)
-		{
-			encrypted[i] = rPart[i];
-			encrypted[i+32] = lPart[i];
-		}
-		cout << "encrypted: ";
-		/*for (size_t i = 0; i < 64; i++)
-		{
-			cout << encrypted[i] << " ";
-		}*/
-		cout << endl;
-		//encrypted = reverse(encrypted);
+		bitset<64> encrypted = combineBitSets(rPart, lPart);
+		
+
+		cout << "encrypted: " << endl;
+	
 		encrypted = rearrange<64, 64>(encrypted, IP_1);
 		cout << hex << encrypted.to_ullong() << endl;
-		
-		
-		
+	
 	}
 	RoundKeyGenerator* getRoundKeyGenerator() {
 		return roundKeyGenerator;
@@ -304,40 +277,27 @@ public:
 	}
 	void decrypt(bitset<64> &cipherText) {
 		bitset<64>cipherText_ = rearrange<64, 64>(cipherText, IP);
-		cout << "cipherText: ";
-		/*for (size_t i = 0; i < 64; i++)
-		{
-			cout << cipherText_[i] << " ";
-		}*/
-		cout << endl;
+		cout << "cipherText: " << endl;
+		
 		cout << hex << cipherText_.to_ullong() << endl;
-		for (size_t i = 0; i < 32; i++)
+		/*for (size_t i = 0; i < 32; i++)
 		{
 			rPart[i] = cipherText_[i];
 			lPart[i] = cipherText_[i + 32];
-		}
+		}*/
+		divideBitSets(rPart, lPart, cipherText_);
 		bitset<32> temp;
 		for (int i = 15; i >= 0; i--)
 		{
 			temp = rPart;
 			rPart = lPart;
-			lPart = (temp^function1(rPart, roundKeyGenerator->getRoundKey(i)));//!
+			lPart = (temp^function1(rPart, roundKeyGenerator->getRoundKey(i)));
 		}
 		
-		bitset<64> decrypted;
-		for (size_t i = 0; i < 32; i++)
-		{
-			decrypted[i] = lPart[i];
-			decrypted[i + 32] = rPart[i];
-		}
-		cout << "decrypted: ";
-		/*for (size_t i = 0; i < 64; i++)
-		{
-			cout << decrypted[i] << " ";
-		}*/
-		cout << endl;
+		bitset<64> decrypted = combineBitSets(lPart, rPart);
+	
+		cout << "decrypted: " << endl;
 		decrypted = rearrange<64, 64>(decrypted, IP_1);
-		//encrypted = reverse(encrypted);
 		cout << hex << decrypted.to_ullong() << endl;
 	}
 private:
@@ -351,18 +311,13 @@ int main() {
 	{
 		Timer timer(__FUNCTION__);
 		try {
-			const unsigned keyLength = 64;
-			bitset<8> a('A');
-			bitset<8> b('B');
-			combineBitSets(a, b);
-			DesEncryption e(0xAABB09182736CCDD);
-			bitset<64> plain(0x123456ABCD132536);
-			//bitset<64> plainReversed = reverse(plain);
+			
+			DesEncryption e(0xBABB09182736CCDD);
+			bitset<64> plain(0x223456ABCD132536);
 			e.encrypt(plain);
 
-			DesDecryption d(0xAABB09182736CCDD,e.getRoundKeyGenerator());
-			bitset<64> cipher(0x815ecdae889d1add);
-			//cipher = reverse(cipher);
+			DesDecryption d(0xBABB09182736CCDD,e.getRoundKeyGenerator());
+			bitset<64> cipher(0xdff5ad425b953caf);
 			d.decrypt(cipher);
 			
 		}

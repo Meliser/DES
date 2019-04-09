@@ -104,13 +104,11 @@ bitset<2 * bitsSize> combineBitSets(const bitset<bitsSize> &lowBits, const bitse
 
 template<size_t bitsSize>
 void divideBitSets(bitset<bitsSize/2> &lowBits, bitset<bitsSize/2> &highBits, const bitset<bitsSize> &bitsToDivide) {
-	
 	for (size_t i = 0; i < bitsSize / 2; i++)
 	{
 		lowBits[i] = bitsToDivide[i];
 		highBits[i] = bitsToDivide[i + bitsSize / 2];
 	}
-	
 }
 
 
@@ -167,7 +165,7 @@ bitset<32> function1(bitset<32> &rPart, const bitset<48> &roundKey) {
 
 class RoundKeyGenerator {
 public:
-	RoundKeyGenerator():currentShift(0){}
+	RoundKeyGenerator(){}
 	template<size_t bitsSize>
 	void initializeC0D0(bitset<bitsSize> &bits) {
 		for (size_t i = 0; i < 28; i++)
@@ -176,14 +174,18 @@ public:
 			d0[i] = bits[--roundKeyTable_[i + 28]];
 		}
 	}
-	void generateRoundKeys(unsigned rounds) {
+	void generateRoundKeys(size_t rounds) {
+		bitset<28> ci(c0);
+		bitset<28> di(d0);
+		bitset<56> temporaryKey;
+		size_t currentShift;
 		for (size_t i = 0; i < rounds; i++)
 		{
-			countCurrentShift(i+1);
-			ci = leftCycleShift(c0, currentShift);
-			di = leftCycleShift(d0, currentShift);
+			currentShift = countCurrentShift(i + 1);
+			ci = leftCycleShift(ci, currentShift);
+			di = leftCycleShift(di, currentShift);
 			temporaryKey = combineBitSets(ci, di);
-			roundKeys[i] = rearrange<56,48>(temporaryKey, finalTable_);
+			roundKeys[i] = rearrange<56, 48>(temporaryKey, finalTable_);
 		}
 	}
 	const bitset<48>& getRoundKey(size_t index)const {
@@ -194,17 +196,15 @@ private:
 	 static char finalTable_[48];
 	 bitset<28> c0;
 	 bitset<28> d0;
-	 bitset<28> ci;
-	 bitset<28> di;
-	 bitset<56> temporaryKey;
 	 array<bitset<48>, 16> roundKeys;
-	 unsigned currentShift;
-	 void countCurrentShift(unsigned round) {
+	 
+	
+	 size_t countCurrentShift(size_t round) {
 		 if (round == 1 or round == 2 or round == 9 or round == 16) {
-			 currentShift++;
+			 return 1;
 		 }
 		 else {
-			 currentShift+=2;
+			 return 2;
 		 }
 	 }
 };
@@ -237,11 +237,7 @@ public:
 
 		bitset<64>plainText_ = rearrange<64, 64>(plainText, IP);
 		divideBitSets(lPart, rPart, plainText_);
-		/*for (size_t i = 0; i < 32; i++)
-		{
-			lPart[i] = plainText_[i];
-			rPart[i] = plainText_[i + 32];
-		}*/
+		
 		cout << "plainText: " << endl;
 		cout << hex << plainText_.to_ullong() << endl;
 		bitset<32> temp;
@@ -280,11 +276,7 @@ public:
 		cout << "cipherText: " << endl;
 		
 		cout << hex << cipherText_.to_ullong() << endl;
-		/*for (size_t i = 0; i < 32; i++)
-		{
-			rPart[i] = cipherText_[i];
-			lPart[i] = cipherText_[i + 32];
-		}*/
+		
 		divideBitSets(rPart, lPart, cipherText_);
 		bitset<32> temp;
 		for (int i = 15; i >= 0; i--)
@@ -306,18 +298,19 @@ private:
 	bitset<32> lPart;
 	bitset<32> rPart;
 };
+
 int main() {
 	//setlocale(0, "rus");
 	{
 		Timer timer(__FUNCTION__);
 		try {
 			
-			DesEncryption e(0xBABB09182736CCDD);
-			bitset<64> plain(0x223456ABCD132536);
+			DesEncryption e(0xAABB09182736CCDD);
+			bitset<64> plain(0x123456ABCD132536);
 			e.encrypt(plain);
 
-			DesDecryption d(0xBABB09182736CCDD,e.getRoundKeyGenerator());
-			bitset<64> cipher(0xdff5ad425b953caf);
+			DesDecryption d(0xAABB09182736CCDD,e.getRoundKeyGenerator());
+			bitset<64> cipher(0x815ecdae889d1add);
 			d.decrypt(cipher);
 			
 		}

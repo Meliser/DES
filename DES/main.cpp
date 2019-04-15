@@ -197,8 +197,6 @@ private:
 	 bitset<28> c0;
 	 bitset<28> d0;
 	 array<bitset<48>, 16> roundKeys;
-	 
-	
 	 size_t countCurrentShift(size_t round) {
 		 if (round == 1 or round == 2 or round == 9 or round == 16) {
 			 return 1;
@@ -224,57 +222,49 @@ char RoundKeyGenerator::finalTable_[48] = { 14, 17, 11, 24, 1, 5, 3, 28,
 
 class DesEncryption {
 public:
-	DesEncryption(unsigned long long key) : key_(key) {
-		roundKeyGenerator = new RoundKeyGenerator;
-		roundKeyGenerator->initializeC0D0(key_);
-		roundKeyGenerator->generateRoundKeys(16);
+	DesEncryption(unsigned long long key, RoundKeyGenerator *roundKeyGenerator_) : key_(key), roundKeyGenerator_(roundKeyGenerator_){
+		//roundKeyGenerator = new RoundKeyGenerator;
+		roundKeyGenerator_->initializeC0D0(key_);
+		roundKeyGenerator_->generateRoundKeys(16);
 	}
-	~DesEncryption()
-	{
-		delete roundKeyGenerator;
-	}
+	
 	void encrypt(bitset<64> &plainText) {
 
 		bitset<64>plainText_ = rearrange<64, 64>(plainText, IP);
 		divideBitSets(lPart, rPart, plainText_);
 		
-		cout << "plainText: " << endl;
+		cout << "plainText: ";
 		cout << hex << plainText_.to_ullong() << endl;
 		bitset<32> temp;
 		for (size_t i = 0; i < 16; i++)
 		{
 			temp = lPart;
 			lPart = rPart;
-			rPart = (temp^function1(rPart, roundKeyGenerator->getRoundKey(i)));
+			rPart = (temp^function1(rPart, roundKeyGenerator_->getRoundKey(i)));
 
 		}
 		bitset<64> encrypted = combineBitSets(rPart, lPart);
-		
-
-		cout << "encrypted: " << endl;
 	
 		encrypted = rearrange<64, 64>(encrypted, IP_1);
+		cout << "encrypted: ";
 		cout << hex << encrypted.to_ullong() << endl;
 	
 	}
-	RoundKeyGenerator* getRoundKeyGenerator() {
-		return roundKeyGenerator;
-	}
+	
 private:
 	bitset<keySize> key_;
-	RoundKeyGenerator *roundKeyGenerator;
+	RoundKeyGenerator *roundKeyGenerator_;
 	bitset<32> lPart;
 	bitset<32> rPart;
 
 };
 class DesDecryption {
 public:
-	DesDecryption(unsigned long long key, RoundKeyGenerator* r) : key_(key), roundKeyGenerator(r){
+	DesDecryption(unsigned long long key, RoundKeyGenerator* roundKeyGenerator) : key_(key), roundKeyGenerator_(roundKeyGenerator){
 	}
 	void decrypt(bitset<64> &cipherText) {
 		bitset<64>cipherText_ = rearrange<64, 64>(cipherText, IP);
-		cout << "cipherText: " << endl;
-		
+		cout << "cipherText: ";
 		cout << hex << cipherText_.to_ullong() << endl;
 		
 		divideBitSets(rPart, lPart, cipherText_);
@@ -283,18 +273,18 @@ public:
 		{
 			temp = rPart;
 			rPart = lPart;
-			lPart = (temp^function1(rPart, roundKeyGenerator->getRoundKey(i)));
+			lPart = (temp^function1(rPart, roundKeyGenerator_->getRoundKey(i)));
 		}
 		
 		bitset<64> decrypted = combineBitSets(lPart, rPart);
 	
-		cout << "decrypted: " << endl;
 		decrypted = rearrange<64, 64>(decrypted, IP_1);
+		cout << "decrypted: ";
 		cout << hex << decrypted.to_ullong() << endl;
 	}
 private:
 	bitset<keySize> key_;
-	RoundKeyGenerator *roundKeyGenerator;
+	RoundKeyGenerator *roundKeyGenerator_;
 	bitset<32> lPart;
 	bitset<32> rPart;
 };
@@ -304,15 +294,15 @@ int main() {
 	{
 		Timer timer(__FUNCTION__);
 		try {
-			
-			DesEncryption e(0xAABB09182736CCDD);
-			bitset<64> plain(0x123456ABCD132536);
+			RoundKeyGenerator* roundKeyGenerator = new RoundKeyGenerator;
+			DesEncryption e(0xAABB09182736CCDD,roundKeyGenerator);
+			bitset<64> plain('B');//0x123456ABCD132536
 			e.encrypt(plain);
 
-			DesDecryption d(0xAABB09182736CCDD,e.getRoundKeyGenerator());
-			bitset<64> cipher(0x815ecdae889d1add);
+			DesDecryption d(0xAABB09182736CCDD, roundKeyGenerator);
+			bitset<64> cipher(0xb94d3aaae5f4378a);
 			d.decrypt(cipher);
-			
+			delete roundKeyGenerator;
 		}
 		catch (const exception &exc) {
 			cout << exc.what() << endl << endl;

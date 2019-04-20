@@ -2,14 +2,14 @@
 #include "RoundKeyGenerator.h"
 #include <iostream>
 #include "feistelFunction.h"
+
 class DesEncryption {
 public:
 	DesEncryption(unsigned long long key, RoundKeyGenerator *roundKeyGenerator_) : key_(key), roundKeyGenerator_(roundKeyGenerator_) {
 		roundKeyGenerator_->initializeC0D0(key_);
 		roundKeyGenerator_->generateRoundKeys(16);
 	}
-
-	void encrypt(bitset<64> &plainText) {
+	void encrypt(const bitset<64> &plainText) {
 
 		bitset<64>plainText_ = rearrange<64, 64>(plainText, IP);
 		divideBitSets(lPart, rPart, plainText_);

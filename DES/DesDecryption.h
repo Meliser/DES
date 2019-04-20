@@ -2,6 +2,9 @@
 #include "RoundKeyGenerator.h"
 #include <iostream>
 #include "feistelFunction.h"
+
+using namespace std;
+
 class DesDecryption {
 public:
 	DesDecryption(unsigned long long key, RoundKeyGenerator* roundKeyGenerator) : key_(key), roundKeyGenerator_(roundKeyGenerator) {

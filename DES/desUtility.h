@@ -1,6 +1,8 @@
 #pragma once
 #include <bitset>
+
 using namespace std;
+
 const size_t keySize = 64;
 const char IP[64] = { 58,	50,	42,	34,	26,	18,	10,	2,
 						  60,	52,	44,	36,	28,	20,	12,	4,
@@ -40,25 +42,25 @@ bitset<tableSize> rearrange(const bitset<bitsSize> &bits, const char table[]) {
 }
 
 template<size_t bitsSize>
-bitset<bitsSize> leftCycleShift(bitset<bitsSize> bits, size_t sbits) {
-	bool head_bit;
-	for (size_t i = 0; i < sbits; i++)
+bitset<bitsSize> leftCycleShift(bitset<bitsSize> bits, size_t shift) {
+	bool headBit;
+	for (size_t i = 0; i < shift; i++)
 	{
-		head_bit = bits[bitsSize - 1];
+		headBit = bits[bitsSize - 1];
 		bits <<= 1;
-		bits[0] = head_bit;
+		bits[0] = headBit;
 	}
 	return bits;
 }
 
 template<size_t bitsSize>
-bitset<bitsSize> rightCycleShift(bitset<bitsSize> bits, size_t sbits) {
-	bool tail_bit;
-	for (size_t i = 0; i < sbits; i++)
+bitset<bitsSize> rightCycleShift(bitset<bitsSize> bits, size_t shift) {
+	bool tailBit;
+	for (size_t i = 0; i < shift; i++)
 	{
-		tail_bit = bits[0];
+		tailBit = bits[0];
 		bits >>= 1;
-		bits[bitsSize - 1] = tail_bit;
+		bits[bitsSize - 1] = tailBit;
 	}
 	return bits;
 }

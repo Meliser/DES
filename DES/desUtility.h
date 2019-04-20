@@ -10,7 +10,7 @@ const char IP[64] = { 58,	50,	42,	34,	26,	18,	10,	2,
 						  59,	51,	43,	35,	27,	19,	11,	3,
 						  61,	53,	45,	37,	29,	21,	13,	5,
 						  63,	55,	47,	39,	31,	23,	15,	7 };
-char FP[64] = { 40,	8,	48,	16,	56,	24,	64,	32,
+const char FP[64] = { 40,	8,	48,	16,	56,	24,	64,	32,
 				  39,	7,	47,	15,	55,	23,	63,	31,
 				  38,	6,	46,	14,	54,	22,	62,	30,
 				  37,	5,	45,	13,	53,	21,	61,	29,
@@ -19,25 +19,22 @@ char FP[64] = { 40,	8,	48,	16,	56,	24,	64,	32,
 				  34,	2,	42,	10,	50,	18,	58,	26,
 				  33,	1,	41,	9,	49,	17,	57,	25 };
 
-
-template<size_t bitsSize>
-bitset<bitsSize> reverse(bitset<bitsSize> &bits) {
-	bitset<bitsSize> reversed_bits;
-	bitset<bitsSize> one(1);
-	for (size_t i = 0; i < bitsSize; i++) {
-		reversed_bits |= (((bits >> i) & one) << (bitsSize - 1 - i));
-	}
-	return reversed_bits;
-}
+//template<size_t bitsSize>
+//bitset<bitsSize> reverse(bitset<bitsSize> &bits) {
+//	bitset<bitsSize> reversed_bits;
+//	bitset<bitsSize> one(1);
+//	for (size_t i = 0; i < bitsSize; i++) {
+//		reversed_bits |= (((bits >> i) & one) << (bitsSize - 1 - i));
+//	}
+//	return reversed_bits;
+//}
 
 template<size_t bitsSize, size_t tableSize >
-bitset<tableSize> rearrange(bitset<bitsSize> &bits, const char table[]) {
+bitset<tableSize> rearrange(const bitset<bitsSize> &bits, const char table[]) {
 	bitset<tableSize> after_IP;
-	char current;
-	for (size_t i = 0; i < tableSize; i++)//!
+	for (size_t i = 0; i < tableSize; i++)
 	{
-		current = table[i];
-		after_IP[i] = bits[--current];
+		after_IP[i] = bits[table[i]-1];
 	}
 	return after_IP;
 }

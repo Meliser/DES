@@ -7,19 +7,12 @@
 
 #include <fstream>
 #include <string>
-//#include "desUtility.h"
 #include "DesEncryption.h"
 #include "DesDecryption.h"
-//#include "feistelFunction.h"
-//#include "RoundKeyGenerator.h"
+
+
 using namespace std;
-
-
-
-
-
-
-using  namespace boost::interprocess;
+using namespace boost::interprocess;
 int main() {
 	setlocale(0, "rus");
 	{

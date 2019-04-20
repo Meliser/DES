@@ -28,7 +28,7 @@ public:
 			roundKeys[i] = rearrange<56, 48>(temporaryKey, PC2);
 		}
 	}
-	//void some();
+	
 	const bitset<48>& getRoundKey(size_t index)const {
 		return roundKeys[index];
 	}

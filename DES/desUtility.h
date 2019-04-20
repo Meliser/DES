@@ -43,40 +43,28 @@ bitset<tableSize> rearrange(bitset<bitsSize> &bits, const char table[]) {
 }
 
 template<size_t bitsSize>
-bitset<bitsSize> leftCycleShift(const bitset<bitsSize> &bits, size_t sbits) {
+bitset<bitsSize> leftCycleShift(bitset<bitsSize> bits, size_t sbits) {
 	bool head_bit;
-	bitset<bitsSize> shiftedBits = bits;
 	for (size_t i = 0; i < sbits; i++)
 	{
-		head_bit = shiftedBits[bitsSize - 1];
-		shiftedBits <<= 1;
-		shiftedBits[0] = head_bit;
+		head_bit = bits[bitsSize - 1];
+		bits <<= 1;
+		bits[0] = head_bit;
 	}
-	return shiftedBits;
+	return bits;
 }
 
 template<size_t bitsSize>
-bitset<bitsSize> rightCycleShift(bitset<bitsSize> &bits, size_t sbits) {
+bitset<bitsSize> rightCycleShift(bitset<bitsSize> bits, size_t sbits) {
 	bool tail_bit;
-	bitset<bitsSize> shiftedBits = bits;
 	for (size_t i = 0; i < sbits; i++)
 	{
-		tail_bit = shiftedBits[0];
-		shiftedBits >>= 1;
-		shiftedBits[bitsSize - 1] = tail_bit;
+		tail_bit = bits[0];
+		bits >>= 1;
+		bits[bitsSize - 1] = tail_bit;
 	}
-	return shiftedBits;
+	return bits;
 }
-
-//template<size_t bitsSize>
-//void show(bitset<bitsSize> &bits) {
-//
-//	for (size_t i = 0; i < bitsSize; i++)
-//	{
-//		cout << bits[i] << " ";
-//	}
-//	cout << endl;
-//}
 
 template<size_t bitsSize>
 bitset<2 * bitsSize> combineBitSets(const bitset<bitsSize> &lowBits, const bitset<bitsSize> &highBits) {

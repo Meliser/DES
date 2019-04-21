@@ -9,7 +9,7 @@ public:
 		roundKeyGenerator_->initializeC0D0(key_);
 		roundKeyGenerator_->generateRoundKeys(16);
 	}
-	void encrypt(const bitset<64> &plainText) {
+	bitset<64> encrypt(const bitset<64> &plainText) {
 
 		bitset<64>plainText_ = rearrange<64, 64>(plainText, IP);
 		divideBitSets(lPart, rPart, plainText_);
@@ -29,7 +29,7 @@ public:
 		encrypted = rearrange<64, 64>(encrypted, FP);
 		cout << "encrypted: ";
 		cout << hex << encrypted.to_ullong() << endl;
-
+		return encrypted;
 	}
 
 private:

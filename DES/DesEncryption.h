@@ -14,8 +14,8 @@ public:
 		bitset<64>plainText_ = rearrange<64, 64>(plainText, IP);
 		divideBitSets(lPart, rPart, plainText_);
 
-		cout << "plainText: ";
-		cout << hex << plainText_.to_ullong() << endl;
+		//cout << "plainText: ";
+		//cout << hex << plainText_.to_ullong() << endl;
 		bitset<32> temp;
 		for (size_t i = 0; i < 16; i++)
 		{
@@ -27,8 +27,8 @@ public:
 		bitset<64> encrypted = combineBitSets(rPart, lPart);
 
 		encrypted = rearrange<64, 64>(encrypted, FP);
-		cout << "encrypted: ";
-		cout << hex << encrypted.to_ullong() << endl;
+		//cout << "encrypted: ";
+		//cout << hex << encrypted.to_ullong() << endl;
 		return encrypted;
 	}
 

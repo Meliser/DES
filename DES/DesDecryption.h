@@ -13,8 +13,8 @@ public:
 	}
 	bitset<64> decrypt(bitset<64> &cipherText) {
 		bitset<64>cipherText_ = rearrange<64, 64>(cipherText, IP);
-		cout << "cipherText: ";
-		cout << hex << cipherText_.to_ullong() << endl;
+		//cout << "cipherText: ";
+		//cout << hex << cipherText_.to_ullong() << endl;
 
 		divideBitSets(rPart, lPart, cipherText_);
 		bitset<32> temp;
@@ -28,8 +28,8 @@ public:
 		bitset<64> decrypted = combineBitSets(lPart, rPart);
 
 		decrypted = rearrange<64, 64>(decrypted, FP);
-		cout << "decrypted: ";
-		cout << hex << decrypted.to_ullong() << endl;
+		//cout << "decrypted: ";
+		//cout << hex << decrypted.to_ullong() << endl;
 		return decrypted;
 	}
 private:

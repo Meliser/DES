@@ -6,6 +6,7 @@
 #include <boost/interprocess/mapped_region.hpp>
 #include <fstream>
 #include <string>
+#include <cmath>
 #include "DesEncryption.h"
 #include "DesDecryption.h"
 
@@ -27,11 +28,11 @@ public:
 		FILE_SAVE.seekp(plainTextSize-1, 0);
 		FILE_SAVE << '\0';
 		FILE_SAVE.close();
-
+		
 		file_mapping mappedEncryptedText(encryptedFilename, read_write);
 		auto encryptedTextRegion = new mapped_region(mappedEncryptedText, read_write);
 		unsigned long long* encryptedTextAddr = static_cast<unsigned long long*>(encryptedTextRegion->get_address());
-		size_t encryptedSize = plainTextSize/8;//!!!!
+		size_t encryptedSize = static_cast<size_t>(ceil(double(plainTextSize)/8));//overload 
 
 		unsigned long long plainTextUnit = 0;
 		RoundKeyGenerator roundKeyGenerator;
@@ -44,11 +45,11 @@ public:
 			{
 				plainTextUnit |= (unsigned long long(plainTextAddr[i*8+j]) << (j * 8));
 			}
-			cout << hex << i << " plainTextUnit: " << plainTextUnit << endl;
+			//cout << hex << i << " plainTextUnit: " << plainTextUnit << endl;
 			plainTextBitsetUnit = plainTextUnit;
 			encryptedTextBitsetUnit = e.encrypt(plainTextBitsetUnit);
 			encryptedTextAddr[i] = encryptedTextBitsetUnit.to_ullong();
-			cout << hex << i << " encryptedTextUnit: " << encryptedTextAddr[i] << endl<<endl;
+			//cout << hex << i << " encryptedTextUnit: " << encryptedTextAddr[i] << endl<<endl;
 			plainTextUnit = 0;
 		}
 
@@ -89,27 +90,26 @@ private:
 class DesDecryptionFile
 {
 public:
-	DesDecryptionFile(const char* encryptedTextFilename) : encryptedTextFilename_(encryptedTextFilename) {
+	DesDecryptionFile(unsigned long long key) : key_(key){}
+	void decryptFile(const char* encryptedTextFilename) {
+		encryptedTextFilename_ = encryptedTextFilename;
 		file_mapping mappedEncryptedText(encryptedTextFilename_, read_write);
 		auto encryptedTextRegion = new mapped_region(mappedEncryptedText, read_write);
 		encryptedTextAddr = static_cast<unsigned char*>(encryptedTextRegion->get_address());
 		encryptedTextSize = encryptedTextRegion->get_size();
 
-		const char* decryptedFilename = "decrypted.dat";
-		std::ofstream FILE_SAVE;
-		FILE_SAVE.open(decryptedFilename, ios_base::binary);
-		FILE_SAVE.seekp(encryptedTextSize - 1, 0);
-		FILE_SAVE << '\0';
-		FILE_SAVE.close();
+		//const char* decryptedTextFilename_ = "decrypted.txt";
+		createEmptyFile(decryptedTextFilename_, encryptedTextSize);
 
-		file_mapping mappedDecryptedText(decryptedFilename, read_write);
+		file_mapping mappedDecryptedText(decryptedTextFilename_, read_write);
 		auto decryptedTextRegion = new mapped_region(mappedDecryptedText, read_write);
 		unsigned long long* decryptedTextAddr = static_cast<unsigned long long*>(decryptedTextRegion->get_address());
-		size_t decryptedSize = encryptedTextSize / 8;//!!!!
+		size_t decryptedSize = static_cast<size_t>(ceil(double(encryptedTextSize) / 8));//overload
+
 
 		unsigned long long encryptedTextUnit = 0;
 		RoundKeyGenerator roundKeyGenerator;
-		DesDecryption d(0xAABB09182736CCDD, &roundKeyGenerator);
+		DesDecryption d(key_, &roundKeyGenerator);
 		bitset<64> decryptedTextBitsetUnit, encryptedTextBitsetUnit;
 
 		for (size_t i = 0; i < decryptedSize; i++)
@@ -118,20 +118,31 @@ public:
 			{
 				encryptedTextUnit |= (unsigned long long(encryptedTextAddr[i * 8 + j]) << (j * 8));
 			}
-			cout << hex << i << " encryptedTextUnit: " << encryptedTextUnit << endl;
+			//cout << hex << i << " encryptedTextUnit: " << encryptedTextUnit << endl;
 			encryptedTextBitsetUnit = encryptedTextUnit;
 			decryptedTextBitsetUnit = d.decrypt(encryptedTextBitsetUnit);
 			decryptedTextAddr[i] = decryptedTextBitsetUnit.to_ullong();
-			cout << hex << i << " decryptedTextUnit: " << decryptedTextAddr[i] << endl << endl;
+			//cout << hex << i << " decryptedTextUnit: " << decryptedTextAddr[i] << endl << endl;
 			encryptedTextUnit = 0;
 		}
-	}
-	
 
+	}
+	void setOutputFile(const char* filename) {
+		decryptedTextFilename_ = filename;
+	}
 private:
+	unsigned long long key_;
 	const char* encryptedTextFilename_;
+	const char* decryptedTextFilename_;
 	unsigned char* encryptedTextAddr;
 	size_t encryptedTextSize;
+	void createEmptyFile(const char* filename,size_t size) {
+		std::ofstream FILE_SAVE;
+		FILE_SAVE.open(filename, ios_base::binary);
+		FILE_SAVE.seekp(size - 1, 0);
+		FILE_SAVE << '\0';
+		FILE_SAVE.close();
+	}
 };
 
 
@@ -140,50 +151,18 @@ int main() {
 	{
 		Timer timer(__FUNCTION__);
 		try {
-			/*std::ofstream FILE_SAVE;
-			FILE_SAVE.open("ddddd.dat",ios_base::binary);
-			FILE_SAVE.seekp(32, 0);
-			FILE_SAVE << '\0';
-			FILE_SAVE.close();*/
 			
-			//const char* filename = "ddddd.dat";// ddddd.dat plainText.txt
-			//file_mapping m_data(filename, read_write);//access rights
-			//auto region = new mapped_region(m_data, read_write);
-
-			//auto data_addr = static_cast<unsigned char*/*unsigned long long**/>(region->get_address());
-			//
-			//using ull = unsigned long long;
-			//size_t data_size = region->get_size();
-			//size_t size = data_size / sizeof(ull);
-			//unsigned long long arr[5] = {0,0,0,0,0};
-			//size_t current,offset;
-			//
-			//for (size_t i = 0; i < data_size; i++)
-			//{
-			//	current = i / sizeof(unsigned long long);
-			//	offset = i % sizeof(unsigned long long);
-			//	arr[current] |= (unsigned long long(data_addr[i]) << (offset * 8));
-			//	
-			//	//data_addr[i]=i;
-			//}
-			//for (size_t i = 0; i < 5; i++)
-			//{
-			//	cout << hex << arr[i] << endl;
-			//}
 			
 			//RoundKeyGenerator roundKeyGenerator;
-			//DesEncryption e(0xAABB09182736CCDD,&roundKeyGenerator);//0xAABB09182736CCDD
-			//bitset<64> plain(0x706050403020100);//0x123456ABCD132536
-			//e.encrypt(plain);
+			
+			
+			const char* plain = "sample.txt";
+			DesEncryptionFile enc(plain);
 
-			//DesDecryption d(0xAABB09182736CCDD,&roundKeyGenerator);
-			//bitset<64> cipher(0x67aae679b5d08559);
-			//d.decrypt(cipher);
-
-			//const char* plain = "plainText.dat";
-			//DesEncryptionFile enc(plain);
 			const char* encrypted = "encrypted.dat";
-			DesDecryptionFile dec(encrypted);
+			DesDecryptionFile dec(0xAABB09182736CCDD);
+			dec.setOutputFile("decrypted.txt");
+			dec.decryptFile(encrypted);
 			
 		}
 		catch (const exception &exc) {

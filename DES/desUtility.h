@@ -21,68 +21,28 @@ const char FP[64] = { 40,	8,	48,	16,	56,	24,	64,	32,
 				  34,	2,	42,	10,	50,	18,	58,	26,
 				  33,	1,	41,	9,	49,	17,	57,	25 };
 
-//template<size_t bitsSize>
-//bitset<bitsSize> reverse(bitset<bitsSize> &bits) {
-//	bitset<bitsSize> reversed_bits;
-//	bitset<bitsSize> one(1);
-//	for (size_t i = 0; i < bitsSize; i++) {
-//		reversed_bits |= (((bits >> i) & one) << (bitsSize - 1 - i));
-//	}
-//	return reversed_bits;
-//}
 
 template<size_t bitsSize, size_t tableSize >
-bitset<tableSize> rearrange(const bitset<bitsSize> &bits, const char table[]) {
-	bitset<tableSize> after_IP;
-	for (size_t i = 0; i < tableSize; i++)
-	{
-		after_IP[i] = bits[table[i]-1];
-	}
-	return after_IP;
-}
+bitset<tableSize> rearrange(const bitset<bitsSize> &bits, const char table[]);
+template bitset<32> rearrange(const bitset<32> &bits, const char table[]);
+template bitset<64> rearrange(const bitset<64> &bits, const char table[]);
+template bitset<48> rearrange(const bitset<32> &bits, const char table[]);
+template bitset<48> rearrange(const bitset<56> &bits, const char table[]);
 
 template<size_t bitsSize>
-bitset<bitsSize> leftCycleShift(bitset<bitsSize> bits, size_t shift) {
-	bool headBit;
-	for (size_t i = 0; i < shift; i++)
-	{
-		headBit = bits[bitsSize - 1];
-		bits <<= 1;
-		bits[0] = headBit;
-	}
-	return bits;
-}
+bitset<bitsSize> leftCycleShift(bitset<bitsSize> bits, size_t shift);
+template bitset<28> leftCycleShift(bitset<28> bits, size_t shift);
 
 template<size_t bitsSize>
-bitset<bitsSize> rightCycleShift(bitset<bitsSize> bits, size_t shift) {
-	bool tailBit;
-	for (size_t i = 0; i < shift; i++)
-	{
-		tailBit = bits[0];
-		bits >>= 1;
-		bits[bitsSize - 1] = tailBit;
-	}
-	return bits;
-}
+bitset<bitsSize> rightCycleShift(bitset<bitsSize> bits, size_t shift);
 
 template<size_t bitsSize>
-bitset<2 * bitsSize> combineBitSets(const bitset<bitsSize> &lowBits, const bitset<bitsSize> &highBits) {
-	bitset<2 * bitsSize> combination;
-	for (size_t i = 0; i < bitsSize; i++)
-	{
-		combination[i] = lowBits[i];
-		combination[i + bitsSize] = highBits[i];
-	}
-	return combination;
-}
+bitset<2 * bitsSize> combineBitSets(const bitset<bitsSize> &lowBits, const bitset<bitsSize> &highBits);
+template bitset<56> combineBitSets(const bitset<28> &lowBits, const bitset<28> &highBits);
+template bitset<64> combineBitSets(const bitset<32> &lowBits, const bitset<32> &highBits);
 
 template<size_t bitsSize>
-void divideBitSets(bitset<bitsSize / 2> &lowBits, bitset<bitsSize / 2> &highBits, const bitset<bitsSize> &bitsToDivide) {
-	for (size_t i = 0; i < bitsSize / 2; i++)
-	{
-		lowBits[i] = bitsToDivide[i];
-		highBits[i] = bitsToDivide[i + bitsSize / 2];
-	}
-}
+void divideBitSets(bitset<bitsSize / 2> &lowBits, bitset<bitsSize / 2> &highBits, const bitset<bitsSize> &bitsToDivide);
+template void divideBitSets(bitset<32> &lowBits, bitset<32> &highBits, const bitset<64> &bitsToDivide);
 
-
+//#include "desUtility.cpp"

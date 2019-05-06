@@ -2,41 +2,30 @@
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <fstream>
-#include <cmath>
-#include "DesDecryption.h"
-using namespace std;
-using namespace boost::interprocess;
-namespace dec {
-	const size_t	sizeOfBlock = 8;
-	const size_t	bitsInByte = 8;
+#include "DesDecryptionBlocks.h"
+
+using boost::interprocess::mapped_region;
+using boost::interprocess::file_mapping;
+using boost::interprocess::read_write;
+using std::ios_base;
+
+namespace des {
+	class DesDecryptionFile
+	{
+	public:
+		DesDecryptionFile(Ull key) :desDecryptorBlocks_(key)
+		{}
+		void decryptFile(const char* encryptedDatatFilename);
+		void setOutputFile(const char* filename);
+
+	private:
+		const char*		decryptedDataFilename_;
+		unsigned char*	encryptedDataAddr_;
+		Ull*			decryptedDataAddr_;
+		size_t			sizeOfData_;
+		DesDecryptionBlocks desDecryptorBlocks_;
+
+		void createEmptyFile(const char* filename, size_t size);
+		mapped_region mapFile(const char* filename);
+	};
 }
-
-class DesDecryptionFile
-{
-	using Ull = unsigned long long;
-public:
-	DesDecryptionFile(Ull key) :key_(key)
-	{
-	}
-	~DesDecryptionFile()
-	{
-		delete desDecryptor;
-	}
-	void decryptFile(const char* encryptedDatatFilename);
-	void setOutputFile(const char* filename);
-	void initializeDesDecryption(RoundKeyGenerator* roundKeyGenerator);
-
-private:
-	Ull				key_;
-	const char*		encryptedDataFilename_;
-	const char*		decryptedDataFilename_;
-	unsigned char*	encryptedDataAddr;
-	Ull*			decryptedDataAddr;
-	size_t			sizeOfData;
-	size_t			numberOfBlocks;
-	DesDecryption*	desDecryptor;
-
-	void createEmptyFile(const char* filename, size_t size);
-	mapped_region mapFile(const char* filename);
-	void decryptBlocks();
-};

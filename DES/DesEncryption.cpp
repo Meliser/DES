@@ -1,23 +1,28 @@
 #include "DesEncryption.h"
 
-DesEncryption::DesEncryption(unsigned long long key, RoundKeyGenerator *roundKeyGenerator_) : key_(key), roundKeyGenerator_(roundKeyGenerator_) {
+des::DesEncryption::DesEncryption(Ull key) : key_(key){
+	roundKeyGenerator_ = new RoundKeyGenerator;
 	roundKeyGenerator_->initializeC0D0(key_);
-	roundKeyGenerator_->generateRoundKeys(16);
+	roundKeyGenerator_->generateRoundKeys(rounds);
+}
+des::DesEncryption::~DesEncryption()
+{
+	delete roundKeyGenerator_;
 }
 
-bitset<64> DesEncryption::encrypt(const bitset<64> &plainText) {
-	bitset<64>plainText_ = rearrange<64, 64>(plainText, IP);
-	divideBitSets(lPart, rPart, plainText_);
-	bitset<32> temp;
-	for (size_t i = 0; i < 16; i++)
+bitset<des::blockSize> des::DesEncryption::encrypt(const bitset<blockSize> &plainText) {
+	bitset<blockSize>plainText_ = rearrange<blockSize,IPSize>(plainText, IP);
+	divideBitSets(lPart_, rPart_, plainText_);
+	bitset<blockSize/2> temp;
+	for (size_t i = 0; i < rounds; i++)
 	{
-		temp = lPart;
-		lPart = rPart;
-		rPart = (temp^feistelFunction(rPart, roundKeyGenerator_->getRoundKey(i)));
+		temp = lPart_;
+		lPart_ = rPart_;
+		rPart_ = (temp^feistelFunction(rPart_, roundKeyGenerator_->getRoundKey(i)));
 
 	}
-	bitset<64> encrypted = combineBitSets(rPart, lPart);
+	bitset<blockSize> encrypted = combineBitSets(rPart_, lPart_);
 
-	encrypted = rearrange<64, 64>(encrypted, FP);
+	encrypted = rearrange<blockSize, FPSize>(encrypted, FP);
 	return encrypted;
 }

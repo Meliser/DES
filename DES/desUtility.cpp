@@ -1,7 +1,7 @@
 #include "desUtility.h"
 
 template<size_t bitsSize, size_t tableSize >
-bitset<tableSize> rearrange(const bitset<bitsSize> &bits, const char table[]) {
+bitset<tableSize> des::rearrange(const bitset<bitsSize> &bits, const char table[]) {
 	bitset<tableSize> after_IP;
 	for (size_t i = 0; i < tableSize; i++)
 	{
@@ -11,7 +11,7 @@ bitset<tableSize> rearrange(const bitset<bitsSize> &bits, const char table[]) {
 }
 
 template<size_t bitsSize>
-bitset<bitsSize> leftCycleShift(bitset<bitsSize> bits, size_t shift) {
+bitset<bitsSize> des::leftCycleShift(bitset<bitsSize> bits, size_t shift) {
 	bool headBit;
 	for (size_t i = 0; i < shift; i++)
 	{
@@ -23,7 +23,7 @@ bitset<bitsSize> leftCycleShift(bitset<bitsSize> bits, size_t shift) {
 }
 
 template<size_t bitsSize>
-bitset<bitsSize> rightCycleShift(bitset<bitsSize> bits, size_t shift) {
+bitset<bitsSize> des::rightCycleShift(bitset<bitsSize> bits, size_t shift) {
 	bool tailBit;
 	for (size_t i = 0; i < shift; i++)
 	{
@@ -35,7 +35,7 @@ bitset<bitsSize> rightCycleShift(bitset<bitsSize> bits, size_t shift) {
 }
 
 template<size_t bitsSize>
-bitset<2 * bitsSize> combineBitSets(const bitset<bitsSize> &lowBits, const bitset<bitsSize> &highBits) {
+bitset<2 * bitsSize> des::combineBitSets(const bitset<bitsSize> &lowBits, const bitset<bitsSize> &highBits) {
 	bitset<2 * bitsSize> combination;
 	for (size_t i = 0; i < bitsSize; i++)
 	{
@@ -46,7 +46,7 @@ bitset<2 * bitsSize> combineBitSets(const bitset<bitsSize> &lowBits, const bitse
 }
 
 template<size_t bitsSize>
-void divideBitSets(bitset<bitsSize / 2> &lowBits, bitset<bitsSize / 2> &highBits, const bitset<bitsSize> &bitsToDivide) {
+void des::divideBitSets(bitset<bitsSize / 2> &lowBits, bitset<bitsSize / 2> &highBits, const bitset<bitsSize> &bitsToDivide) {
 	for (size_t i = 0; i < bitsSize / 2; i++)
 	{
 		lowBits[i] = bitsToDivide[i];

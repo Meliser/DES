@@ -1,14 +1,17 @@
 #pragma once
 #include "RoundKeyGenerator.h"
 #include "feistelFunction.h"
-
-class DesEncryption {
-public:
-	DesEncryption(unsigned long long key, RoundKeyGenerator *roundKeyGenerator_);
-	bitset<64> encrypt(const bitset<64> &plainText);
-private:
-	bitset<keySize> key_;
-	RoundKeyGenerator *roundKeyGenerator_;
-	bitset<32> lPart;
-	bitset<32> rPart;
-};
+using std::bitset;
+namespace des {
+	class DesEncryption {
+	public:
+		DesEncryption(Ull key);
+		~DesEncryption();
+		bitset<blockSize> encrypt(const bitset<blockSize> &plainText);
+	private:
+		bitset<keySize> key_;
+		RoundKeyGenerator *roundKeyGenerator_;
+		bitset<blockSize/2> lPart_;
+		bitset<blockSize/2> rPart_;
+	};
+}

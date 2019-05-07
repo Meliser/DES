@@ -1,22 +1,25 @@
 #include "DesDecryptionFile.h"
 
-void des::DesDecryptionFile::decryptFile(const char* encryptedDatatFilename) {
-
-	mapped_region encryptedDataRegion = mapFile(encryptedDatatFilename);
-	encryptedDataAddr_ = static_cast<unsigned char*>(encryptedDataRegion.get_address());
-	sizeOfData_ = encryptedDataRegion.get_size();
-
-	createEmptyFile(decryptedDataFilename_, sizeOfData_);
-
-	mapped_region decryptedDataRegion = mapFile(decryptedDataFilename_);
-	decryptedDataAddr_ = static_cast<Ull*>(decryptedDataRegion.get_address());
+void des::DesDecryptionFile::decryptFile(const char* encryptedDataFilename, const char* decryptedDataFilename) {
+	try {
+		encryptedDataRegion_ = mapFile(encryptedDataFilename);
+	}
+	catch (std::exception&) {
+		throw badFilenameException(encryptedDataFilename);
+	}
+	encryptedDataAddr_ = static_cast<unsigned char*>(encryptedDataRegion_.get_address());
+	sizeOfData_ = encryptedDataRegion_.get_size();
 	
+	createEmptyFile(decryptedDataFilename, sizeOfData_);
+
+	try {
+		decryptedDataRegion_ = mapFile(decryptedDataFilename);
+	}
+	catch (std::exception&) {
+		throw badFilenameException(encryptedDataFilename);
+	}
+	decryptedDataAddr_ = static_cast<Ull*>(decryptedDataRegion_.get_address());
 	desDecryptorBlocks_.decryptBlocks(encryptedDataAddr_, sizeOfData_, decryptedDataAddr_);
-	
-}
-
-void des::DesDecryptionFile::setOutputFile(const char* filename) {
-	decryptedDataFilename_ = filename;
 }
 
 void des::DesDecryptionFile::createEmptyFile(const char* filename, size_t size) {

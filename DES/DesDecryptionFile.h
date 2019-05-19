@@ -2,7 +2,6 @@
 #include <boost/interprocess/file_mapping.hpp>
 #include <boost/interprocess/mapped_region.hpp>
 #include <fstream>
-#include <string>
 #include "DesDecryptionBlocks.h"
 #include "badFilenameException.h"
 
@@ -20,7 +19,7 @@ namespace des {
 		void decryptFile(const char* encryptedDatatFilename, const char* decryptedDataFilename);
 
 	private:
-		unsigned char*	encryptedDataAddr_;
+		const unsigned char*	encryptedDataAddr_;
 		Ull*			decryptedDataAddr_;
 		size_t			sizeOfData_;
 		DesDecryptionBlocks desDecryptorBlocks_;

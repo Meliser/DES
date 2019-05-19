@@ -19,7 +19,7 @@ namespace des {
 		void encryptFile(const char* plainDatatFilename, const char* encryptedDataFilename);
 		
 	private:
-		unsigned char*	plainDataAddr_;
+		const unsigned char*	plainDataAddr_;
 		Ull*	encryptedDataAddr_;
 		size_t			sizeOfData_;
 		DesEncryptionBlocks desEncryptorBlocks_;

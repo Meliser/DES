@@ -7,7 +7,7 @@ void des::DesDecryptionFile::decryptFile(const char* encryptedDataFilename, cons
 	catch (std::exception&) {
 		throw badFilenameException(encryptedDataFilename);
 	}
-	encryptedDataAddr_ = static_cast<unsigned char*>(encryptedDataRegion_.get_address());
+	encryptedDataAddr_ = static_cast<const unsigned char*>(encryptedDataRegion_.get_address());
 	sizeOfData_ = encryptedDataRegion_.get_size();
 	
 	createEmptyFile(decryptedDataFilename, sizeOfData_);
@@ -16,10 +16,11 @@ void des::DesDecryptionFile::decryptFile(const char* encryptedDataFilename, cons
 		decryptedDataRegion_ = mapFile(decryptedDataFilename);
 	}
 	catch (std::exception&) {
-		throw badFilenameException(encryptedDataFilename);
+		throw badFilenameException(decryptedDataFilename);
 	}
 	decryptedDataAddr_ = static_cast<Ull*>(decryptedDataRegion_.get_address());
-	desDecryptorBlocks_.decryptBlocks(encryptedDataAddr_, sizeOfData_, decryptedDataAddr_);
+	size_t numberOfBlocks = static_cast<size_t>(ceil(static_cast<double>(sizeOfData_) / 8));//overload 
+	desDecryptorBlocks_.decryptBlocks(encryptedDataAddr_, sizeOfData_, decryptedDataAddr_, numberOfBlocks);
 }
 
 void des::DesDecryptionFile::createEmptyFile(const char* filename, size_t size) {

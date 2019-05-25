@@ -21,7 +21,7 @@ int main() {
 	setlocale(0, "rus");
 	{
 		try {
-			unsigned long long key = 0xAA182736CAA;
+			unsigned long long key = 0xff;
 			const char* plain =		"C:\\Users\\Meliser\\source\\repos\\DES\\DES\\sample.txt";
 			const char* encrypted = "C:\\Users\\Meliser\\source\\repos\\DES\\DES\\encrypted.dat";
 			const char* decrypted = "C:\\Users\\Meliser\\source\\repos\\DES\\DES\\decrypted.txt";
@@ -33,16 +33,15 @@ int main() {
 			dec.decryptFile(encrypted, decrypted);
 
 			DesEncryptionString encS(key);
-			string pstring("hello world");
+			string pstring("hellotraèèèèèèèÈ");
 			encS.encryptString(pstring);
-			char* encryptedString = reinterpret_cast<char*>(encS.getEncryptedString());
-			cout << encryptedString << endl;
+			cout << encS.getAccumulator()<<"|"<< endl;
 
 			DesDecryptionString decS(key);
-			string estring(encryptedString);
-			decS.decryptString(estring);
-			unsigned char* decryptedString = reinterpret_cast<unsigned char*>(decS.getDecryptedString());
-			cout << decryptedString << endl;
+		
+			string es(encS.getAccumulator());
+			decS.decryptString(es);
+			cout << decS.getAccumulator()<< "|" << endl;
 			
 		}
 		catch (const exception &exception) {

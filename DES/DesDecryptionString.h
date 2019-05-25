@@ -15,9 +15,13 @@ namespace des {
 		Ull* getDecryptedString() {
 			return decryptedString_;
 		}
+		const string& getAccumulator()const {
+			return accumulator;
+		}
 	private:
 		DesDecryptionBlocks desDecryptorBlocks_;
 		Ull* decryptedString_;
+		string accumulator;
 	};
 }
 

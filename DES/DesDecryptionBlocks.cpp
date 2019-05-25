@@ -12,8 +12,10 @@ void des::DesDecryptionBlocks::decryptBlocks(	const unsigned char*	encryptedData
 {
 	bitset<blockSize>	decryptedDataBitsetUnit,
 						encryptedDataBitsetUnit;
+	
 	for (size_t i = 0; i < numberOfBlocks; i++)
 	{
+	
 		for (size_t j = 0; j < blockSize / bitsInByte; j++)
 		{
 			encryptedDataBitsetUnit |= (static_cast<Ull>(encryptedDataAddr[i * bitsInByte + j]) << (j * bitsInByte));

@@ -56,5 +56,3 @@ namespace des {
 	template void divideBitSets(bitset<32> &lowBits, bitset<32> &highBits, const bitset<64> &bitsToDivide);
 }
 
-
-//#include "desUtility.cpp"
